@@ -1,0 +1,20 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "storage_path",
+      "description": "Base folder for input and output files.",
+      "password": false
+    }
+  ],
+  "servers": {
+    "groupdocs-metadata": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
+      "env": {
+        "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
+      }
+    }
+  }
+}

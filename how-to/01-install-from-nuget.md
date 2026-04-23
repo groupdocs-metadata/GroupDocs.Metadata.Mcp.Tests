@@ -1,0 +1,148 @@
+# Install from NuGet
+
+Two install routes from [`nuget.org/packages/GroupDocs.Metadata.Mcp`](https://www.nuget.org/packages/GroupDocs.Metadata.Mcp):
+
+1. **`dnx`** — run-on-demand (recommended for MCP clients). No install step.
+2. **Global dotnet tool** — installed once, runs by name.
+
+Both require the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+
+## Prerequisites
+
+```bash
+dotnet --version
+# must print 10.0.x or higher
+```
+
+If this returns an older version or "command not found," install the .NET 10
+SDK first. On Windows, verify `dnx` is on PATH:
+
+```bash
+dnx --help           # bash / Linux / macOS
+dnx.cmd --help       # Windows (older shells)
+```
+
+`dnx` ships inside `.NET 10 SDK` at `C:\Program Files\dotnet\dnx.cmd` on
+Windows and `~/.dotnet/dnx` on Linux/macOS.
+
+## Option 1 — dnx (recommended)
+
+```bash
+dnx GroupDocs.Metadata.Mcp@26.4.3 --yes
+```
+
+The first invocation downloads the package into the NuGet cache; subsequent
+invocations reuse it. `--yes` auto-confirms the package-trust prompt.
+
+**What you should see on stderr:**
+
+```
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: ModelContextProtocol.Server.StdioServerTransport[...]
+      Server (stream) (GroupDocs.Metadata.Mcp) transport reading messages.
+warn: GroupDocs.Mcp.Core.Licensing.LicenseManager[0]
+      No license configured. Running in evaluation mode. ...
+```
+
+stdout is reserved for JSON-RPC — the process is waiting for a client to speak
+MCP on its stdin. Press `Ctrl+C` to exit.
+
+### Smoke test with a raw JSON-RPC request
+
+Pipe an `initialize` + `tools/list` sequence to see the advertised tools:
+
+```bash
+# bash
+(
+  echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'
+  echo '{"jsonrpc":"2.0","method":"notifications/initialized"}'
+  echo '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
+  sleep 2
+) | GROUPDOCS_MCP_STORAGE_PATH=./docs dnx GroupDocs.Metadata.Mcp@26.4.3 --yes
+```
+
+You should see two JSON-RPC responses containing `read_metadata` and
+`remove_metadata`.
+
+## Option 2 — global dotnet tool
+
+```bash
+dotnet tool install -g GroupDocs.Metadata.Mcp
+groupdocs-metadata-mcp
+```
+
+To update:
+
+```bash
+dotnet tool update -g GroupDocs.Metadata.Mcp
+```
+
+To uninstall:
+
+```bash
+dotnet tool uninstall -g GroupDocs.Metadata.Mcp
+```
+
+The tool runs from `~/.dotnet/tools/groupdocs-metadata-mcp` (Linux/macOS) or
+`%USERPROFILE%\.dotnet\tools\groupdocs-metadata-mcp.exe` (Windows). Make sure
+that directory is on your `PATH` — the `dotnet tool install` output will warn
+you if it isn't.
+
+## Configuration
+
+Set via environment variables when launching:
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `GROUPDOCS_MCP_STORAGE_PATH` | Folder the server reads input from and writes cleaned copies to | current working directory |
+| `GROUPDOCS_MCP_OUTPUT_PATH` | Optional — route output files to a different folder | same as storage |
+| `GROUPDOCS_LICENSE_PATH` | Path to `GroupDocs.Total.lic` — required for `remove_metadata` | *(evaluation mode)* |
+
+```bash
+GROUPDOCS_MCP_STORAGE_PATH=/data/documents \
+GROUPDOCS_LICENSE_PATH=/secrets/GroupDocs.Total.lic \
+dnx GroupDocs.Metadata.Mcp@26.4.3 --yes
+```
+
+## License
+
+`read_metadata` works fine in evaluation mode. `remove_metadata` requires a
+license — without one, the underlying `GroupDocs.Metadata.Save()` call throws
+`GroupDocsMetadataException: "Could not save the file. Evaluation only."` and
+the tool returns an error.
+
+Get a license from [purchase.groupdocs.com](https://purchase.groupdocs.com/).
+Point `GROUPDOCS_LICENSE_PATH` at the `.lic` file and `read_metadata` output
+loses the evaluation-mode prefix.
+
+## Verifying version at runtime
+
+The server's `initialize` response includes `serverInfo.version`. With an MCP
+client:
+
+```text
+initialize response → serverInfo: { name: "GroupDocs.Metadata.Mcp", version: "26.4.3" }
+```
+
+This value comes from the published assembly's `AssemblyInformationalVersion`
+and is enforced to match the NuGet package version at build time — so it's
+authoritative. If you want to script-check it, see
+[06 — Integration tests](06-run-integration-tests.md) — the first test in
+`ToolDiscoveryTests.cs` asserts this.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `dnx: command not found` | .NET 10 SDK not installed, or not on PATH | Install from [dotnet.microsoft.com](https://dotnet.microsoft.com/download/dotnet/10.0). Ensure `C:\Program Files\dotnet\` (Windows) or equivalent is on PATH. |
+| First run hangs for ~30 s | Package is downloading from nuget.org into cache | Normal. Subsequent runs are fast. |
+| `No license configured. Running in evaluation mode.` | No `GROUPDOCS_LICENSE_PATH` | Expected. Ignore for `read_metadata`; set the path to enable `remove_metadata`. |
+| `Could not save the file. Evaluation only.` | `remove_metadata` without license | Set `GROUPDOCS_LICENSE_PATH`. |
+| Client can't see any tools | MCP client didn't finish `initialize` handshake before issuing `tools/list` | Check your client config — most handle this automatically. If hand-rolling, always send `notifications/initialized` after `initialize`. |
+
+## Next steps
+
+- Wire into a client: [Claude Desktop](04-use-with-claude-desktop.md) · [VS Code / Copilot](05-use-with-vscode-copilot.md)
+- Or try it in Docker: [02 — Run via Docker](02-run-via-docker.md)
+- Verify the package's MCP registry listing: [03 — MCP registry](03-verify-mcp-registry.md)

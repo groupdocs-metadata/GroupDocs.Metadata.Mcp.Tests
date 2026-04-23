@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "groupdocs-metadata": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
+      "env": {
+        "GROUPDOCS_MCP_STORAGE_PATH": "/absolute/path/to/documents"
+      }
+    }
+  }
+}

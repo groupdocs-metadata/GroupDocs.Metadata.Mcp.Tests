@@ -1,0 +1,43 @@
+# GroupDocs.Metadata.Mcp.Tests
+
+Integration tests and deployment how-to guides for GroupDocs.Metadata.Mcp — the MCP server that exposes GroupDocs.Metadata for .NET to AI agents (Claude, Cursor, VS Code / GitHub Copilot, and other MCP-compatible clients).
+
+This repo validates the **published NuGet artifact** end-to-end and doubles as a reference for using it from every supported channel.
+
+## Primary repository
+
+- MCP server source + package: https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp
+- NuGet package: https://www.nuget.org/packages/GroupDocs.Metadata.Mcp
+- Docker images: ghcr.io/groupdocs-metadata/metadata-net-mcp and docker.io/groupdocs/metadata-net-mcp
+
+## Deployment channels covered by how-to guides
+
+- how-to/01-install-from-nuget.md — dnx (recommended) + global dotnet tool
+- how-to/02-run-via-docker.md — container image + docker-compose
+- how-to/03-verify-mcp-registry.md — MCP registry discovery and NuGet.org auto-generated mcp.json
+- how-to/04-use-with-claude-desktop.md — Claude Desktop stdio config
+- how-to/05-use-with-vscode-copilot.md — VS Code / GitHub Copilot config with prompt-string inputs
+- how-to/06-run-integration-tests.md — run this repo's test suite locally and in CI
+
+## MCP tools exposed by the server
+
+- read_metadata — extract all metadata properties (author, title, dates, EXIF, XMP, IPTC, custom) as grouped JSON
+- remove_metadata — strip all metadata and save a clean copy (requires a GroupDocs license)
+
+## Environment variables
+
+- GROUPDOCS_MCP_STORAGE_PATH — base folder for input + output (defaults to current working directory)
+- GROUPDOCS_MCP_OUTPUT_PATH — optional, routes output files to a separate folder
+- GROUPDOCS_LICENSE_PATH — path to GroupDocs.Total.lic; omit for evaluation mode (RemoveMetadata will fail)
+
+## Key facts for AI agents
+
+- Testing the shipped NuGet, not the source. No project reference to the server.
+- Tool names on the wire are snake_case: read_metadata, remove_metadata.
+- RemoveMetadata cannot succeed in evaluation mode — the underlying library refuses Save(). Tests branch on GROUPDOCS_LICENSE_PATH.
+- Sample documents are built from byte arrays at test startup. Drop real fixtures in sample-docs/ to extend coverage.
+- Target framework is net10.0 only. Requires .NET 10 SDK for dnx.
+
+## License
+
+MIT — see LICENSE

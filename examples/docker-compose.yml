@@ -1,0 +1,9 @@
+services:
+  groupdocs-metadata-mcp:
+    image: ghcr.io/groupdocs-metadata/metadata-net-mcp:latest
+    stdin_open: true
+    tty: false
+    environment:
+      GROUPDOCS_MCP_STORAGE_PATH: /data
+    volumes:
+      - ./documents:/data
