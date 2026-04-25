@@ -85,6 +85,51 @@ public class RemoveMetadataTests
         Assert.Contains("photo_clean", body, StringComparison.OrdinalIgnoreCase);
     }
 
+    public static IEnumerable<object[]> RealRemovableSamples() => new[]
+    {
+        new object[] { SampleDocuments.SamplePdf,  "sample_clean.pdf" },
+        new object[] { SampleDocuments.SampleJpeg, "sample_clean.jpg" },
+        new object[] { SampleDocuments.SamplePng,  "sample_clean.png" },
+        new object[] { SampleDocuments.SampleDocx, "sample_clean.docx" },
+        new object[] { SampleDocuments.SampleXlsx, "sample_clean.xlsx" },
+    };
+
+    [Theory]
+    [MemberData(nameof(RealRemovableSamples))]
+    public async Task RemoveMetadata_RealSample_WritesCleanOutput_Licensed(string fileName, string expectedCleanFileName)
+    {
+        if (!IsLicensed)
+        {
+            _output.WriteLine("GROUPDOCS_LICENSE_PATH not set — skipping licensed-mode test.");
+            return;
+        }
+
+        if (!File.Exists(Path.Combine(_fixture.StoragePath, fileName)))
+        {
+            _output.WriteLine($"Sample '{fileName}' not present in storage — skipping.");
+            return;
+        }
+
+        var catalog = await ToolCatalog.LoadAsync(_fixture.Client);
+
+        var response = await _fixture.Client.CallToolAsync(
+            catalog.Remove.Name,
+            new Dictionary<string, object?>
+            {
+                ["file"] = new Dictionary<string, object?> { ["filePath"] = fileName },
+            });
+
+        Assert.False(response.IsError ?? false,
+            $"Remove failed for '{fileName}': {ToolResponse.Text(response)}");
+
+        var body = ToolResponse.Text(response);
+        _output.WriteLine(body);
+
+        var cleanPath = Path.Combine(_fixture.StoragePath, expectedCleanFileName);
+        Assert.True(File.Exists(cleanPath),
+            $"Expected cleaned file at '{cleanPath}'. Response body:\n{body}");
+    }
+
     [Fact]
     public async Task RemoveMetadata_FollowUpReadOfCleanedFile_Succeeds_Licensed()
     {

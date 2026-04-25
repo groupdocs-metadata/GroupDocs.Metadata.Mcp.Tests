@@ -116,6 +116,8 @@ create_docker_compose_file() {
     fi
 
     # Workspace is mounted RW because dotnet restore/test writes obj/ and bin/.
+    # sample-docs is mounted RO at /sample-docs and the fixture reads
+    # GROUPDOCS_MCP_SAMPLE_DOCS to copy real samples into its writable storage dir.
     # The test project spawns its own MCP server via `dnx`; no sidecar needed.
     cat > "$compose_file" << EOF
 services:
@@ -125,11 +127,11 @@ services:
     environment:
       DOTNET_NOLOGO: "true"
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
-      GROUPDOCS_MCP_STORAGE_PATH: /data
+      GROUPDOCS_MCP_SAMPLE_DOCS: /sample-docs
 $license_env
     volumes:
       - $PROJECT_ROOT:/workspace
-      - $SAMPLE_DOCS_DIR:/data:ro
+      - $SAMPLE_DOCS_DIR:/sample-docs:ro
 $license_mount
     command:
       - dotnet

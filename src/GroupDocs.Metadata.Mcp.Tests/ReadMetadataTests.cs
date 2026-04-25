@@ -86,4 +86,44 @@ public class ReadMetadataTests
             body.Contains(SampleDocuments.KnownTitle, StringComparison.Ordinal),
             $"Expected to find '{SampleDocuments.KnownAuthor}' or '{SampleDocuments.KnownTitle}' in response:\n{body}");
     }
+
+    public static IEnumerable<object[]> RealSampleData() => new[]
+    {
+        new object[] { SampleDocuments.SamplePdf,  "application/pdf" },
+        new object[] { SampleDocuments.SampleJpeg, "image/jpeg" },
+        new object[] { SampleDocuments.SamplePng,  "image/png" },
+        new object[] { SampleDocuments.SampleDocx, "application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+        new object[] { SampleDocuments.SampleXlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" },
+    };
+
+    [Theory]
+    [MemberData(nameof(RealSampleData))]
+    public async Task ReadMetadata_RealSample_ReportsExpectedMimeType(string fileName, string expectedMimeType)
+    {
+        if (!File.Exists(Path.Combine(_fixture.StoragePath, fileName)))
+        {
+            _output.WriteLine($"Sample '{fileName}' not present in storage — skipping.");
+            return;
+        }
+
+        var catalog = await ToolCatalog.LoadAsync(_fixture.Client);
+
+        var response = await _fixture.Client.CallToolAsync(
+            catalog.Read.Name,
+            new Dictionary<string, object?>
+            {
+                ["file"] = new Dictionary<string, object?> { ["filePath"] = fileName },
+            });
+
+        Assert.False(response.IsError ?? false,
+            $"Tool reported an error reading '{fileName}': {ToolResponse.Text(response)}");
+
+        // OOXML and PDF responses can exceed the tool's output budget and be truncated
+        // mid-JSON, so we verify by substring rather than full JsonDocument.Parse.
+        var body = ToolResponse.Text(response);
+        _output.WriteLine(body);
+
+        Assert.Contains("\"fileFormat\"", body);
+        Assert.Contains(expectedMimeType, body, StringComparison.OrdinalIgnoreCase);
+    }
 }

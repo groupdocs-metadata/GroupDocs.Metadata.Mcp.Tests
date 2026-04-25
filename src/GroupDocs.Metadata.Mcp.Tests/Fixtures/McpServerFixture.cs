@@ -20,6 +20,7 @@ public sealed class McpServerFixture : IAsyncLifetime
     {
         Directory.CreateDirectory(StoragePath);
         SampleDocuments.WriteAll(StoragePath);
+        SampleDocuments.CopyRealSamples(StoragePath, SampleDocuments.ResolveSourceSampleDocs());
 
         var transport = new StdioClientTransport(new StdioClientTransportOptions
         {
