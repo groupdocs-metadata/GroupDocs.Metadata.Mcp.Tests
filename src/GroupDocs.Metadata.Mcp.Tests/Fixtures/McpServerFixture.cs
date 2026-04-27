@@ -22,11 +22,16 @@ public sealed class McpServerFixture : IAsyncLifetime
         SampleDocuments.WriteAll(StoragePath);
         SampleDocuments.CopyRealSamples(StoragePath, SampleDocuments.ResolveSourceSampleDocs());
 
+        // dnx has no `@latest` literal — to get the latest stable, omit the `@<version>` entirely.
+        var packageSpec = PackageVersion.IsLatest
+            ? "GroupDocs.Metadata.Mcp"
+            : $"GroupDocs.Metadata.Mcp@{PackageVersion.Value}";
+
         var transport = new StdioClientTransport(new StdioClientTransportOptions
         {
             Name = "groupdocs-metadata-mcp",
             Command = CommandResolver.Resolve("dnx"),
-            Arguments = new[] { $"GroupDocs.Metadata.Mcp@{PackageVersion.Value}", "--yes" },
+            Arguments = new[] { packageSpec, "--yes" },
             WorkingDirectory = StoragePath,
             EnvironmentVariables = BuildServerEnv(),
         });

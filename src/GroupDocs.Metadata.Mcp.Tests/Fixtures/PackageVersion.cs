@@ -6,6 +6,9 @@ internal static class PackageVersion
 {
     public static string Value { get; } = ResolveVersion();
 
+    public static bool IsLatest => string.IsNullOrWhiteSpace(Value)
+        || string.Equals(Value, "latest", StringComparison.OrdinalIgnoreCase);
+
     private static string ResolveVersion()
     {
         var envOverride = Environment.GetEnvironmentVariable("MCP_PACKAGE_VERSION");
@@ -16,6 +19,6 @@ internal static class PackageVersion
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "McpPackageVersion");
 
-        return !string.IsNullOrWhiteSpace(meta?.Value) ? meta!.Value! : "26.4.3";
+        return !string.IsNullOrWhiteSpace(meta?.Value) ? meta!.Value! : "latest";
     }
 }

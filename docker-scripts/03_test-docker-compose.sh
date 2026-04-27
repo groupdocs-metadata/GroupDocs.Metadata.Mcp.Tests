@@ -20,14 +20,17 @@
 #   ./03_test-docker-compose.sh [OPTIONS]
 #
 # Options:
-#   --version VERSION       Test specific package version (default: 26.4.3)
+#   --version VERSION       Test specific package version (default: latest)
+#                           Use "latest" or omit the flag to track nuget.org's
+#                           most recent stable release. Pin (e.g. "26.4.3") for
+#                           reproducible / shared / CI runs.
 #   --filter PATTERN        Run only tests matching pattern
 #   --license PATH          Path to GroupDocs license file
 #   --keep                  Keep containers running (don't auto-cleanup)
 #   --help                  Show this help message
 #
 # Examples:
-#   ./03_test-docker-compose.sh
+#   ./03_test-docker-compose.sh                                  # latest stable
 #   ./03_test-docker-compose.sh --version 26.4.4
 #   ./03_test-docker-compose.sh --filter ReadMetadata --keep
 #
@@ -47,7 +50,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TEST_PROJECT_DIR="$PROJECT_ROOT/src/GroupDocs.Metadata.Mcp.Tests"
 SAMPLE_DOCS_DIR="$PROJECT_ROOT/sample-docs"
-MCP_PACKAGE_VERSION="${MCP_PACKAGE_VERSION:-26.4.3}"
+MCP_PACKAGE_VERSION="${MCP_PACKAGE_VERSION:-latest}"
 TEST_FILTER=""
 LICENSE_PATH=""
 KEEP_CONTAINERS=false

@@ -19,8 +19,9 @@ Numeric prefixes indicate the recommended running sequence.
 |------|---------|
 | `00_quick-start.sh` | **Cheatsheet** — Copy-paste reference. Not meant to be executed directly. |
 | `01_verify-setup.sh` | **Preflight** — Check Docker, .NET SDK, project structure, connectivity. |
-| `02_test-all-scenarios.sh` | **Main runner** — Runs the integration suite locally (fastest). |
-| `03_test-docker-compose.sh` | **Docker runner** — Runs the suite inside a .NET SDK container. |
+| `02_test-all-scenarios.sh` | **Main runner** — Runs the integration suite locally against the published NuGet (via `dnx`). |
+| `03_test-docker-compose.sh` | **SDK-container runner** — Runs the suite inside a `dotnet/sdk` container; still uses `dnx` to spawn the MCP server. |
+| `04_run-server-with-samples.sh` | **Interactive Docker MCP server** — Launches the published `metadata-net-mcp` container with `sample-docs/` mounted, for ad-hoc smoke testing. |
 | `helpers.sh` | Library — shared logging, Docker, .NET utilities (sourced, not run). |
 | `README.md` | This file. |
 
@@ -47,17 +48,20 @@ brew install docker dotnet git
 ### Basic Usage
 
 ```bash
-# Run all tests (fastest — local execution)
+# Run all tests against the LATEST nuget.org release (fastest — local execution, default)
 ./02_test-all-scenarios.sh
 
-# Run tests in Docker containers
+# Run tests in Docker containers (also defaults to latest)
 ./03_test-docker-compose.sh
+
+# Try the published Docker MCP image with the repo's sample-docs mounted
+./04_run-server-with-samples.sh
 
 # Run specific test scenario
 ./02_test-all-scenarios.sh --filter ReadMetadata
 
-# Test with specific package version
-./02_test-all-scenarios.sh --version 26.4.4
+# Pin to a specific package version (reproducible / CI runs)
+./02_test-all-scenarios.sh --version 26.4.3
 
 # Use license for licensed-mode tests
 ./02_test-all-scenarios.sh --license /path/to/GroupDocs.Total.lic
@@ -74,21 +78,24 @@ Usage:
   ./02_test-all-scenarios.sh [OPTIONS]
 
 Options:
-  --version VERSION       Test specific package version (default: 26.4.3)
+  --version VERSION       Test specific package version (default: latest)
+                          Use "latest" or omit to track nuget.org's most recent
+                          stable release. Pin (e.g. "26.4.3") for reproducible
+                          / shared / CI runs.
   --filter PATTERN        Run only tests matching pattern
   --no-build              Skip local .NET build, use pre-built
   --license PATH          Path to GroupDocs license file
   --help                  Show help message
 
 Examples:
-  # All 12 tests (default)
+  # All 12 tests against latest stable (default)
   ./02_test-all-scenarios.sh
 
   # Only ReadMetadata tests
   ./02_test-all-scenarios.sh --filter ReadMetadata
 
-  # Test version 26.4.4 with custom license
-  ./02_test-all-scenarios.sh --version 26.4.4 --license /path/to/lic
+  # Pin to 26.4.3 with custom license
+  ./02_test-all-scenarios.sh --version 26.4.3 --license /path/to/lic
 
   # Skip rebuild (use cached binaries)
   ./02_test-all-scenarios.sh --no-build --filter ToolDiscovery
@@ -120,18 +127,21 @@ Usage:
   ./03_test-docker-compose.sh [OPTIONS]
 
 Options:
-  --version VERSION       Test specific package version (default: 26.4.3)
+  --version VERSION       Test specific package version (default: latest)
+                          Use "latest" or omit to track nuget.org's most recent
+                          stable release. Pin (e.g. "26.4.3") for reproducible
+                          / shared / CI runs.
   --filter PATTERN        Run only tests matching pattern
   --license PATH          Path to GroupDocs license file
   --keep                  Keep containers running (for debugging)
   --help                  Show help message
 
 Examples:
-  # Run all tests in Docker
+  # Run all tests in Docker against latest stable (default)
   ./03_test-docker-compose.sh
 
-  # Run with specific version
-  ./03_test-docker-compose.sh --version 26.4.4
+  # Pin to a specific version
+  ./03_test-docker-compose.sh --version 26.4.3
 
   # Keep containers for inspection
   ./03_test-docker-compose.sh --keep
@@ -269,7 +279,7 @@ docker compose -f docker-compose.test.yml down -v
 ### Test Multiple Versions
 
 ```bash
-for version in 26.4.3 26.4.4 26.5.0; do
+for version in 26.4.3 26.4.4 26.5.0 latest; do
   echo "Testing version $version..."
   ./02_test-all-scenarios.sh --version $version || exit 1
 done

@@ -21,11 +21,14 @@ chmod +x *.sh          # Make scripts executable (Linux/macOS only)
 
 # ===== MOST COMMON COMMANDS =====
 
-# Run all 12 tests locally (FASTEST)
+# Run all 12 tests locally against the LATEST nuget.org release (FASTEST + default)
 ./02_test-all-scenarios.sh
 
-# Run tests in Docker containers
+# Run tests in Docker containers (also defaults to latest)
 ./03_test-docker-compose.sh
+
+# Try the published Docker MCP image with this repo's sample-docs mounted (interactive)
+./04_run-server-with-samples.sh
 
 # Run only ToolDiscovery tests (2 seconds, validates server startup)
 ./02_test-all-scenarios.sh --filter ToolDiscovery
@@ -33,8 +36,8 @@ chmod +x *.sh          # Make scripts executable (Linux/macOS only)
 # Run only ReadMetadata tests
 ./02_test-all-scenarios.sh --filter ReadMetadata
 
-# Test specific version
-./02_test-all-scenarios.sh --version 26.4.4
+# Pin to a specific version (recommended for CI / reproducible runs)
+./02_test-all-scenarios.sh --version 26.4.3
 
 # Use GroupDocs license (unlocks RemoveMetadata tests)
 ./02_test-all-scenarios.sh --license /path/to/GroupDocs.Total.lic
@@ -42,8 +45,8 @@ chmod +x *.sh          # Make scripts executable (Linux/macOS only)
 
 # ===== DOCKER-SPECIFIC COMMANDS =====
 
-# Run in Docker with custom version
-./03_test-docker-compose.sh --version 26.4.4
+# Pin to a specific version in Docker
+./03_test-docker-compose.sh --version 26.4.3
 
 # Run in Docker and keep containers (for debugging)
 ./03_test-docker-compose.sh --keep
@@ -54,7 +57,7 @@ docker compose -f docker-compose.test.yml down -v
 
 # ===== ADVANCED USAGE =====
 
-# Test multiple versions sequentially
+# Test multiple specific versions sequentially
 for v in 26.4.3 26.4.4 26.5.0; do
   ./02_test-all-scenarios.sh --version $v || exit 1
 done

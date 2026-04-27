@@ -147,7 +147,7 @@ main() {
     fi
     
     # Check scripts
-    for script in 00_quick-start.sh 02_test-all-scenarios.sh 03_test-docker-compose.sh helpers.sh; do
+    for script in 00_quick-start.sh 02_test-all-scenarios.sh 03_test-docker-compose.sh 04_run-server-with-samples.sh helpers.sh; do
         if [ -f "$SCRIPT_DIR/$script" ]; then
             print_pass "Script found: $script"
         else

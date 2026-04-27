@@ -34,6 +34,32 @@ dnx GroupDocs.Metadata.Mcp@26.4.3 --yes
 The first invocation downloads the package into the NuGet cache; subsequent
 invocations reuse it. `--yes` auto-confirms the package-trust prompt.
 
+### Pinned vs always-latest
+
+`@<version>` pins to that exact release. **Omit it to always pull the latest
+stable** on each invocation:
+
+```bash
+dnx GroupDocs.Metadata.Mcp --yes                # latest stable, refreshed every run
+dnx GroupDocs.Metadata.Mcp --prerelease --yes   # latest including pre-releases
+```
+
+| | Pinned (`@26.4.3`) | Unpinned |
+|---|---|---|
+| Use for | Client configs committed to repos, CI, shared team setups | Quick local smoke tests, dev machines that should track latest |
+| Reproducibility | identical version on every machine / session | depends on when each machine first pulled |
+| Behaviour on a new release | unaffected — keeps using cached version until you bump | downloads + uses the new version on next launch |
+| Risk of unexpected breakage | low | a release that renames a tool / changes a schema will surprise you mid-session |
+| Startup time on day-of-release | instant from cache | +1–10s for the version probe + download |
+
+> **`dnx` does not support npm-style ranges** (`^26.4`, `~26.4.0`). It's pinned-exact
+> or latest-stable — nothing in between. If you want a floor without bumping
+> on every release, you'll need to update the pinned value manually.
+
+The cache lives at `%USERPROFILE%\.nuget\packages\groupdocs.metadata.mcp\<version>\`
+on Windows and `~/.nuget/packages/groupdocs.metadata.mcp/<version>/` on
+Linux/macOS. Old versions accumulate there until you delete them.
+
 **What you should see on stderr:**
 
 ```

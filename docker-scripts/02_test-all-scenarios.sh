@@ -21,14 +21,17 @@
 #   ./02_test-all-scenarios.sh [OPTIONS]
 #
 # Options:
-#   --version VERSION       Test specific package version (default: 26.4.3)
+#   --version VERSION       Test specific package version (default: latest)
+#                           Use "latest" or omit the flag to track nuget.org's
+#                           most recent stable release. Pin (e.g. "26.4.3") for
+#                           reproducible / shared / CI runs.
 #   --filter PATTERN        Run only tests matching pattern (e.g., ReadMetadata)
 #   --no-build              Skip local .NET build, use pre-built
 #   --license PATH          Path to GroupDocs license file
 #   --help                  Show this help message
 #
 # Examples:
-#   ./02_test-all-scenarios.sh
+#   ./02_test-all-scenarios.sh                                  # latest stable
 #   ./02_test-all-scenarios.sh --version 26.4.4 --filter ReadMetadata
 #   ./02_test-all-scenarios.sh --license /path/to/GroupDocs.Total.lic
 #
@@ -49,7 +52,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TEST_PROJECT_DIR="$PROJECT_ROOT/src/GroupDocs.Metadata.Mcp.Tests"
 SAMPLE_DOCS_DIR="$PROJECT_ROOT/sample-docs"
 BUILD_CONFIG="Release"
-MCP_PACKAGE_VERSION="${MCP_PACKAGE_VERSION:-26.4.3}"
+MCP_PACKAGE_VERSION="${MCP_PACKAGE_VERSION:-latest}"
 TEST_FILTER=""
 SKIP_BUILD=false
 LICENSE_PATH=""

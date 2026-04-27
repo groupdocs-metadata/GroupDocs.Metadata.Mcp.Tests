@@ -12,7 +12,12 @@ Each release is tagged with its version (`:26.4.3`) and `:latest`.
 ```bash
 docker --version
 # Docker 20.10+ is fine; any recent version works
+docker info        # confirms the daemon is running
 ```
+
+On **Windows / macOS**, the daemon ships inside [Docker Desktop](https://www.docker.com/products/docker-desktop) — make sure it's installed and started before running any of the commands below. Symptom of a stopped daemon: `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine` (Windows) or `Cannot connect to the Docker daemon at unix:///var/run/docker.sock` (macOS / Linux without Desktop).
+
+On **Windows specifically**, Docker Desktop must have access to the drive your storage folder lives on. With the WSL2 backend (default since 4.x) this is automatic; with the legacy Hyper-V backend, enable it under **Settings → Resources → File sharing**.
 
 ## One-off run
 
@@ -28,13 +33,45 @@ docker run --rm -i \
 
 The image sets `ENV GROUPDOCS_MCP_STORAGE_PATH=/data` and declares `VOLUME /data`, so the client tools see filenames relative to whatever you mount.
 
-## Pinned version
+## Pinned vs always-latest
 
-Always pin the version tag in production configs — `:latest` floats:
+Each release pushes both `:<version>` (e.g. `:26.4.3`) and updates `:latest` to point at it. Pick the tag that matches how you want to handle upgrades:
 
 ```bash
-docker pull ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.3
+docker pull ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.3   # pinned to exact version
+docker pull ghcr.io/groupdocs-metadata/metadata-net-mcp:latest   # floats to most recent push
 ```
+
+### The Docker cache gotcha
+
+Unlike `dnx`, Docker is **sticky**. Once you've pulled `:latest` at any point, every subsequent `docker run :latest` reuses the cached image — Docker does **not** check the registry again until you explicitly refresh:
+
+```bash
+# Refresh manually (pull on demand — recommended for periodic upgrade cadences):
+docker pull ghcr.io/groupdocs-metadata/metadata-net-mcp:latest
+
+# OR force a registry probe on every container start (auto-refresh, slower startup):
+docker run --pull always --rm -i \
+  -v "$(pwd)/documents:/data" \
+  ghcr.io/groupdocs-metadata/metadata-net-mcp:latest
+```
+
+| Tag strategy | Behaviour | Best for |
+|---|---|---|
+| `:26.4.3` | Locked to that release. No surprise upgrades. | Committed configs, CI, shared team setups. |
+| `:latest` (default `--pull missing`) | Stays on the version you first pulled. Manual `docker pull :latest` to refresh. | Solo devs upgrading on a schedule (e.g. once a month). |
+| `:latest` + `--pull always` | Probes registry on every container start. | Always-current dev machines; tolerate +1–10s startup. |
+
+> Docker tags don't support npm-style ranges (`^26.4`, `~26.4`) — it's pin-exact, `:latest`, or any custom tag the publisher pushes. The MCP image only publishes version tags + `:latest`.
+
+### Verifying which version `:latest` resolved to
+
+```bash
+docker inspect ghcr.io/groupdocs-metadata/metadata-net-mcp:latest \
+  --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+```
+
+Or once the server is running, the MCP `initialize` response includes `serverInfo.version` — same authoritative source as the NuGet flow ([01 — NuGet § Verifying version at runtime](01-install-from-nuget.md#verifying-version-at-runtime)).
 
 ## Smoke test
 
@@ -136,10 +173,13 @@ world-readable anyway, but gives better audit trail).
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| `failed to connect to the docker API at npipe://...` (Windows) or `Cannot connect to the Docker daemon at unix:///var/run/docker.sock` | Docker daemon not running | Start Docker Desktop (Windows / macOS) or `sudo systemctl start docker` (Linux). |
+| `error during connect: ... mounts denied` / mount silently empty (Windows) | Drive not shared with Docker Desktop | Settings → Resources → File sharing → add the drive. With WSL2 backend this is usually automatic; with Hyper-V backend it's manual. |
 | Client says "server crashed" immediately | Passed `-t` along with `-i` | Remove `-t`. MCP needs a clean stdio pipe. |
 | Tools see no files | Mount path / env var mismatch | Confirm you mounted to `/data` and didn't override `GROUPDOCS_MCP_STORAGE_PATH`. |
 | Permission denied writing output | Host mount is read-only or uid mismatch | Make the mount writable. `-v ./documents:/data` (not `:ro`). |
 | `manifest unknown` / can't pull image | Version tag doesn't exist on that registry | Check [ghcr.io/groupdocs-metadata/metadata-net-mcp](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp/pkgs/container/metadata-net-mcp) for available tags. |
+| `:latest` ran but didn't pick up a new release | Docker reuses cached image — `docker run :latest` does not auto-pull | `docker pull ghcr.io/groupdocs-metadata/metadata-net-mcp:latest` before running, or add `--pull always` to your `docker run`. |
 
 ## Next steps
 
