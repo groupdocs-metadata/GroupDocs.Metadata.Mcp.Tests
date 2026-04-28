@@ -27,7 +27,7 @@ Create the file if it doesn't exist.
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.4", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/Users/you/Documents"
       }
@@ -76,7 +76,7 @@ where dnx.cmd        # Windows (from cmd)
       "args": [
         "run", "--rm", "-i",
         "-v", "/Users/you/Documents:/data",
-        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.3"
+        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.4"
       ]
     }
   }

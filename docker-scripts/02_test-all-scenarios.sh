@@ -23,7 +23,7 @@
 # Options:
 #   --version VERSION       Test specific package version (default: latest)
 #                           Use "latest" or omit the flag to track nuget.org's
-#                           most recent stable release. Pin (e.g. "26.4.3") for
+#                           most recent stable release. Pin (e.g. "26.4.4") for
 #                           reproducible / shared / CI runs.
 #   --filter PATTERN        Run only tests matching pattern (e.g., ReadMetadata)
 #   --no-build              Skip local .NET build, use pre-built

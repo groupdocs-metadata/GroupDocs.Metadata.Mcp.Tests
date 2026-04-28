@@ -21,7 +21,7 @@
 #   ./04_run-server-with-samples.sh [OPTIONS]
 #
 # Options:
-#   --image-tag TAG         Image tag (default: latest). Pin to e.g. "26.4.3"
+#   --image-tag TAG         Image tag (default: latest). Pin to e.g. "26.4.4"
 #                           for reproducible runs. Each release pushes both the
 #                           version tag AND :latest.
 #   --no-pull               Skip the implicit `--pull always` (use cached image)
@@ -36,7 +36,7 @@
 # Examples:
 #   ./04_run-server-with-samples.sh                      # interactive, latest
 #   ./04_run-server-with-samples.sh --smoke              # CI-style smoke check
-#   ./04_run-server-with-samples.sh --image-tag 26.4.3   # pinned
+#   ./04_run-server-with-samples.sh --image-tag 26.4.4   # pinned
 #   ./04_run-server-with-samples.sh --license /path/to/GroupDocs.Total.lic
 #
 ################################################################################

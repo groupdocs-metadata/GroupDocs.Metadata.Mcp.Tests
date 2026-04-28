@@ -21,7 +21,7 @@ Per-change notes for the GroupDocs.Metadata.Mcp integration tests repo, captured
 ---
 id: 001
 date: 2026-04-23
-package-under-test: 26.4.3   # version of GroupDocs.Metadata.Mcp the suite targets
+package-under-test: 26.4.4   # version of GroupDocs.Metadata.Mcp the suite targets
 type: feature | fix | refactor | docs | chore | breaking
 ---
 

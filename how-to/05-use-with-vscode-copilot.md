@@ -30,7 +30,7 @@ Create the file at the root of your workspace:
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.4", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
       }
@@ -59,7 +59,7 @@ value.
       "args": [
         "run", "--rm", "-i",
         "-v", "${workspaceFolder}/documents:/data",
-        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.3"
+        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.4"
       ]
     }
   }

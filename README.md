@@ -46,9 +46,9 @@ dotnet test
 Test a specific published version:
 
 ```bash
-dotnet test -p:McpPackageVersion=26.4.3
+dotnet test -p:McpPackageVersion=26.4.4
 # or
-MCP_PACKAGE_VERSION=26.4.3 dotnet test
+MCP_PACKAGE_VERSION=26.4.4 dotnet test
 ```
 
 The first run downloads the NuGet package — subsequent runs are cached.

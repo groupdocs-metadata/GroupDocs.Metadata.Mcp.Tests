@@ -37,7 +37,7 @@ chmod +x *.sh          # Make scripts executable (Linux/macOS only)
 ./02_test-all-scenarios.sh --filter ReadMetadata
 
 # Pin to a specific version (recommended for CI / reproducible runs)
-./02_test-all-scenarios.sh --version 26.4.3
+./02_test-all-scenarios.sh --version 26.4.4
 
 # Use GroupDocs license (unlocks RemoveMetadata tests)
 ./02_test-all-scenarios.sh --license /path/to/GroupDocs.Total.lic
@@ -46,7 +46,7 @@ chmod +x *.sh          # Make scripts executable (Linux/macOS only)
 # ===== DOCKER-SPECIFIC COMMANDS =====
 
 # Pin to a specific version in Docker
-./03_test-docker-compose.sh --version 26.4.3
+./03_test-docker-compose.sh --version 26.4.4
 
 # Run in Docker and keep containers (for debugging)
 ./03_test-docker-compose.sh --keep

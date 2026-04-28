@@ -4,7 +4,7 @@ Step-by-step guides for verifying and using every deployment channel of
 [`GroupDocs.Metadata.Mcp`](https://www.nuget.org/packages/GroupDocs.Metadata.Mcp).
 
 Each guide is self-contained — pick the one that matches your workflow. They
-all point at the same published artifact (`26.4.3` at time of writing).
+all point at the same published artifact (`26.4.4` at time of writing).
 
 | # | Guide | When to use |
 |---|---|---|
@@ -27,7 +27,7 @@ all point at the same published artifact (`26.4.3` at time of writing).
 
 ## Common context
 
-- All guides target `GroupDocs.Metadata.Mcp@26.4.3`. Substitute a newer version
+- All guides target `GroupDocs.Metadata.Mcp@26.4.4`. Substitute a newer version
   freely — the interfaces haven't changed.
 - Tools exposed on the wire are `read_metadata` and `remove_metadata` (snake_case).
 - `remove_metadata` requires a licensed GroupDocs.Total.lic — without one, the
