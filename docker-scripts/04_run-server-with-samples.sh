@@ -10,7 +10,7 @@
 # Two modes:
 #   - Default (no args): run server interactively. Press Ctrl+C to stop.
 #   - --smoke           : pipe an initialize + tools/list JSON-RPC pair through
-#                         stdin and verify both tools are advertised. Returns 0
+#                         stdin and verify all tools are advertised. Returns 0
 #                         on success.
 #
 # Prerequisites:
@@ -26,8 +26,8 @@
 #                           version tag AND :latest.
 #   --no-pull               Skip the implicit `--pull always` (use cached image)
 #   --smoke                 Run a JSON-RPC smoke test instead of an interactive
-#                           server. Exits non-zero if the server doesn't
-#                           advertise both `read_metadata` and `remove_metadata`.
+#                           server. Exits non-zero if the server doesn't advertise
+#                           `read_metadata`, `remove_metadata`, and `get_document_info`.
 #   --license PATH          Mount a GroupDocs license file (enables
 #                           remove_metadata; without it the server runs in
 #                           evaluation mode)
@@ -132,8 +132,12 @@ if [ "$RUN_MODE" = "smoke" ]; then
     )
     set -e
 
-    if echo "$response" | grep -q '"read_metadata"' && echo "$response" | grep -q '"remove_metadata"'; then
-        log_success "Both tools advertised — smoke test PASSED"
+    if echo "$response" | grep -q '"read_metadata"' \
+        && echo "$response" | grep -q '"search_metadata"' \
+        && echo "$response" | grep -q '"write_metadata"' \
+        && echo "$response" | grep -q '"remove_metadata"' \
+        && echo "$response" | grep -q '"get_document_info"'; then
+        log_success "All 5 tools advertised (read/search/write/remove_metadata, get_document_info) — smoke test PASSED"
         exit 0
     else
         log_error "Smoke test FAILED — expected tools not found in response"

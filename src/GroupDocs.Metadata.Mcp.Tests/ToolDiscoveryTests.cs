@@ -29,16 +29,19 @@ public class ToolDiscoveryTests
     }
 
     [Fact]
-    public async Task ListTools_ExposesReadAndRemoveMetadata()
+    public async Task ListTools_ExposesAllFiveMetadataTools()
     {
         var catalog = await ToolCatalog.LoadAsync(_fixture.Client);
 
         foreach (var tool in catalog.All)
             _output.WriteLine($"tool: {tool.Name} — {tool.Description}");
 
-        Assert.Equal(2, catalog.All.Count);
+        Assert.Equal(5, catalog.All.Count);
         Assert.NotNull(catalog.Read);
         Assert.NotNull(catalog.Remove);
+        Assert.NotNull(catalog.DocumentInfo);
+        Assert.NotNull(catalog.Search);
+        Assert.NotNull(catalog.Write);
     }
 
     [Fact]

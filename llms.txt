@@ -18,11 +18,15 @@ This repo validates the **published NuGet artifact** end-to-end and doubles as a
 - how-to/04-use-with-claude-desktop.md — Claude Desktop stdio config
 - how-to/05-use-with-vscode-copilot.md — VS Code / GitHub Copilot config with prompt-string inputs
 - how-to/06-run-integration-tests.md — run this repo's test suite locally and in CI
+- how-to/07-use-with-cursor.md — Cursor Agent config (mcpServers) + Windows dnx SSL-timeout workaround
 
 ## MCP tools exposed by the server
 
 - read_metadata — extract all metadata properties (author, title, dates, EXIF, XMP, IPTC, custom) as grouped JSON
-- remove_metadata — strip all metadata and save a clean copy (requires a GroupDocs license)
+- search_metadata — return only properties matching a category/name/value filter ("show me the author", "does this have GPS?")
+- write_metadata — set/add a property (Author, Title, Subject, Keywords, Comments, Copyright, Company, Manager) and save
+- remove_metadata — strip all metadata, or only specific categories (gps, author, comments, dates, software, …), and save a clean copy
+- get_document_info — return file type, MIME type, page count, byte size, and encryption status as JSON (no metadata dump)
 
 ## Environment variables
 
@@ -33,7 +37,7 @@ This repo validates the **published NuGet artifact** end-to-end and doubles as a
 ## Key facts for AI agents
 
 - Testing the shipped NuGet, not the source. No project reference to the server.
-- Tool names on the wire are snake_case: read_metadata, remove_metadata.
+- Tool names on the wire are snake_case: read_metadata, search_metadata, write_metadata, remove_metadata, get_document_info.
 - RemoveMetadata cannot succeed in evaluation mode — the underlying library refuses Save(). Tests branch on GROUPDOCS_LICENSE_PATH.
 - Sample documents are built from byte arrays at test startup. Drop real fixtures in sample-docs/ to extend coverage.
 - Target framework is net10.0 only. Requires .NET 10 SDK for dnx.

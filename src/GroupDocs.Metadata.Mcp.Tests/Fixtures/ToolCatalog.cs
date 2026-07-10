@@ -3,9 +3,12 @@ using ModelContextProtocol.Client;
 namespace GroupDocs.Metadata.Mcp.IntegrationTests.Fixtures;
 
 /// Resolves tool names by keyword. The server-side attribute [McpServerTool] uses
-/// the method name verbatim today (PascalCase: ReadMetadata, RemoveMetadata), but
+/// the method name verbatim today (PascalCase: ReadMetadata, RemoveMetadata,
+/// GetDocumentInfo, SearchMetadata, WriteMetadata → wire names read_metadata,
+/// remove_metadata, get_document_info, search_metadata, write_metadata), but
 /// keyword-based resolution keeps tests robust against future renames / casing
-/// convention changes.
+/// convention changes. NOTE: keywords must be snake_case substrings of the wire name
+/// (Contains is literal — "get_document_info".Contains("documentinfo") is false).
 internal sealed class ToolCatalog
 {
     private readonly IReadOnlyList<McpClientTool> _tools;
@@ -22,6 +25,9 @@ internal sealed class ToolCatalog
 
     public McpClientTool Read => Resolve("read");
     public McpClientTool Remove => Resolve("remove");
+    public McpClientTool DocumentInfo => Resolve("document_info");
+    public McpClientTool Search => Resolve("search");
+    public McpClientTool Write => Resolve("write");
 
     private McpClientTool Resolve(string keyword) =>
         _tools.FirstOrDefault(t => t.Name.Contains(keyword, StringComparison.OrdinalIgnoreCase))

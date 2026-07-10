@@ -13,7 +13,7 @@ on:
       package_version:
         description: "GroupDocs.Metadata.Mcp version on nuget.org to test"
         required: false
-        default: "26.5.1"
+        default: "26.7.1"
   # Triggered from the main repo's publish workflow right after a NuGet push.
   # Payload: { "package_version": "x.y.z" }
   repository_dispatch:
@@ -32,7 +32,7 @@ jobs:
       MCP_PACKAGE_VERSION: >-
         ${{ github.event.inputs.package_version
             || github.event.client_payload.package_version
-            || '26.5.1' }}
+            || '26.7.1' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -51,6 +51,27 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libgdiplus libfontconfig1
+
+      # macOS runners ship neither GDI+ nor libgdiplus. GroupDocs engines that
+      # touch image / spreadsheet content P/Invoke System.Drawing, which loads
+      # libgdiplus. The dnx-spawned server's dyld does NOT search the Homebrew
+      # prefix or /usr/local/lib (a failing run showed its dlopen only probes the
+      # package dir, the .NET shared-framework dir, and /usr/lib). So install via
+      # Homebrew and copy the dylib into the .NET runtime's shared-framework dir,
+      # a path .NET's System.Drawing explicitly probes; libgdiplus's own deps
+      # (cairo, glib, …) stay resolvable via the absolute Homebrew paths baked
+      # into its load commands. (Windows has GDI+ built in; Linux: apt above.)
+      - name: Install macOS native deps
+        if: runner.os == 'macOS'
+        run: |
+          set -euxo pipefail
+          brew install mono-libgdiplus
+          GDIP="$(brew --prefix mono-libgdiplus)/lib/libgdiplus.dylib"
+          otool -L "$GDIP" || true
+          for d in "$HOME/.dotnet/shared/Microsoft.NETCore.App/"*/ ; do
+            cp -f "$GDIP" "$d"
+            echo "installed libgdiplus -> $d"
+          done
 
       - name: Show environment
         shell: bash

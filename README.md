@@ -17,9 +17,10 @@ and user-facing how-to guides for every deployment channel.
   [MCP registry](how-to/03-verify-mcp-registry.md),
   [Claude Desktop](how-to/04-use-with-claude-desktop.md),
   [VS Code / Copilot](how-to/05-use-with-vscode-copilot.md),
-  [running the tests](how-to/06-run-integration-tests.md)).
+  [running the tests](how-to/06-run-integration-tests.md),
+  [Cursor](how-to/07-use-with-cursor.md)).
 - [examples/](examples/) — ready-to-paste `claude-desktop.json`,
-  `vscode-mcp.json`, and `docker-compose.yml`.
+  `vscode-mcp.json`, `cursor-mcp.json`, and `docker-compose.yml`.
 - [AGENTS.md](AGENTS.md) — orientation for AI coding agents working in this repo.
 - [llms.txt](llms.txt) — machine-readable summary for LLM tooling.
 - [changelog/](changelog/) — one entry per change set (see
@@ -32,7 +33,10 @@ and user-facing how-to guides for every deployment channel.
 | Package installs and starts via `dnx` | [McpServerFixture](src/GroupDocs.Metadata.Mcp.Tests/Fixtures/McpServerFixture.cs) |
 | MCP handshake, server info, version | [ToolDiscoveryTests](src/GroupDocs.Metadata.Mcp.Tests/ToolDiscoveryTests.cs) |
 | `ReadMetadata` — PDF + JPEG, schema + values | [ReadMetadataTests](src/GroupDocs.Metadata.Mcp.Tests/ReadMetadataTests.cs) |
-| `RemoveMetadata` — output file + read-back check | [RemoveMetadataTests](src/GroupDocs.Metadata.Mcp.Tests/RemoveMetadataTests.cs) |
+| `SearchMetadata` — name/category/value filters, zero-match | [SearchMetadataTests](src/GroupDocs.Metadata.Mcp.Tests/SearchMetadataTests.cs) |
+| `WriteMetadata` — unknown-property, eval-mode failure, licensed round-trip | [WriteMetadataTests](src/GroupDocs.Metadata.Mcp.Tests/WriteMetadataTests.cs) |
+| `RemoveMetadata` — full + selective `categories`, output file + read-back | [RemoveMetadataTests](src/GroupDocs.Metadata.Mcp.Tests/RemoveMetadataTests.cs) |
+| `GetDocumentInfo` — format / page count / MIME type, no metadata dump | [GetDocumentInfoTests](src/GroupDocs.Metadata.Mcp.Tests/GetDocumentInfoTests.cs) |
 | Unknown / corrupted files, password parameter | [ErrorHandlingTests](src/GroupDocs.Metadata.Mcp.Tests/ErrorHandlingTests.cs) |
 
 ## Running locally
@@ -46,9 +50,9 @@ dotnet test
 Test a specific published version:
 
 ```bash
-dotnet test -p:McpPackageVersion=26.4.4
+dotnet test -p:McpPackageVersion=26.7.1
 # or
-MCP_PACKAGE_VERSION=26.4.4 dotnet test
+MCP_PACKAGE_VERSION=26.7.1 dotnet test
 ```
 
 The first run downloads the NuGet package — subsequent runs are cached.
@@ -87,8 +91,9 @@ GroupDocs.Metadata refuses to `Save()` any file in evaluation mode — so
 `RemoveMetadata` always returns an error unless a license is configured.
 Tests branch on `GROUPDOCS_LICENSE_PATH`:
 
-- **Unset (default):** `RemoveMetadata_InEvaluationMode_ReturnsErrorResponse`
-  runs and verifies the tool fails gracefully. Licensed-mode tests no-op.
+- **Unset (default):** `RemoveMetadata_InEvaluationMode_ReturnsDescriptiveFailure`
+  runs and verifies the tool returns a descriptive `"Metadata removal failed for … Evaluation only"`
+  message (it no longer flips `IsError`, as of MCP 26.7.1). Licensed-mode tests no-op.
 - **Set:** Licensed tests run — they assert the cleaned file is produced and
   is re-readable by `ReadMetadata`.
 

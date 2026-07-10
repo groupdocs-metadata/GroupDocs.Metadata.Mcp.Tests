@@ -6,8 +6,11 @@ namespace GroupDocs.Metadata.Mcp.IntegrationTests;
 
 /// RemoveMetadata calls GroupDocs.Metadata's Save(), which is blocked in
 /// evaluation mode by the underlying library (throws "Could not save the file.
-/// Evaluation only."). Tests therefore branch on whether GROUPDOCS_LICENSE_PATH
-/// is set on the test host and propagated to the fixture.
+/// Evaluation only."). As of MCP 26.7.0 the tool catches that exception and
+/// returns a descriptive "Metadata removal failed for '<file>': ..." string
+/// (IsError is false) rather than surfacing an MCP invocation error. Tests
+/// therefore branch on whether GROUPDOCS_LICENSE_PATH is set on the test host
+/// and propagated to the fixture.
 [Collection(McpServerCollection.Name)]
 public class RemoveMetadataTests
 {
@@ -24,7 +27,7 @@ public class RemoveMetadataTests
         !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GROUPDOCS_LICENSE_PATH"));
 
     [Fact]
-    public async Task RemoveMetadata_InEvaluationMode_ReturnsErrorResponse()
+    public async Task RemoveMetadata_InEvaluationMode_ReturnsDescriptiveFailure()
     {
         if (IsLicensed)
         {
@@ -41,13 +44,14 @@ public class RemoveMetadataTests
                 ["file"] = new Dictionary<string, object?> { ["filePath"] = SampleDocuments.PlainJpeg },
             });
 
-        // In eval mode GroupDocs.Metadata.Save throws — the tool surfaces that as a
-        // CallToolResult with IsError = true. We can't assert the exact message
-        // because the MCP SDK wraps exceptions, but the tool must stay up.
-        Assert.True(response.IsError ?? false,
-            $"Expected an error in evaluation mode. Response:\n{ToolResponse.Text(response)}");
+        var body = ToolResponse.Text(response);
+        _output.WriteLine($"Eval-mode response (expected): {body}");
 
-        _output.WriteLine($"Eval-mode response (expected): {ToolResponse.Text(response)}");
+        // As of MCP 26.7.0 the tool catches Save()'s eval-mode exception and returns a
+        // descriptive string (IsError is false). The response must start with the
+        // failure prefix and mention the underlying evaluation-only cause.
+        Assert.Contains("Metadata removal failed for", body, StringComparison.Ordinal);
+        Assert.Contains("Evaluation only", body, StringComparison.OrdinalIgnoreCase);
 
         // Server stays alive for subsequent calls.
         var listAfter = await _fixture.Client.ListToolsAsync();
@@ -165,5 +169,71 @@ public class RemoveMetadataTests
         _output.WriteLine(body);
 
         Assert.Contains("image/jpeg", body);
+    }
+
+    [Fact]
+    public async Task RemoveMetadata_SelectiveCategory_InEvaluationMode_ReturnsDescriptiveFailure()
+    {
+        if (IsLicensed)
+        {
+            _output.WriteLine("GROUPDOCS_LICENSE_PATH is set — skipping evaluation-mode assertion.");
+            return;
+        }
+
+        var catalog = await ToolCatalog.LoadAsync(_fixture.Client);
+
+        // authored.pdf has author-tagged properties, so the selective removal applies
+        // in-memory and Save() then throws the eval-only exception.
+        var response = await _fixture.Client.CallToolAsync(
+            catalog.Remove.Name,
+            new Dictionary<string, object?>
+            {
+                ["file"] = new Dictionary<string, object?> { ["filePath"] = SampleDocuments.AuthoredPdf },
+                ["categories"] = new[] { "author" },
+            });
+
+        var body = ToolResponse.Text(response);
+        _output.WriteLine(body);
+
+        Assert.Contains("Metadata removal failed for", body, StringComparison.Ordinal);
+        Assert.Contains("Evaluation only", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RemoveMetadata_SelectiveAuthor_RemovesOnlyAuthor_Licensed()
+    {
+        if (!IsLicensed)
+        {
+            _output.WriteLine("GROUPDOCS_LICENSE_PATH not set — skipping licensed-mode test.");
+            return;
+        }
+
+        var catalog = await ToolCatalog.LoadAsync(_fixture.Client);
+
+        var removeResponse = await _fixture.Client.CallToolAsync(
+            catalog.Remove.Name,
+            new Dictionary<string, object?>
+            {
+                ["file"] = new Dictionary<string, object?> { ["filePath"] = SampleDocuments.AuthoredPdf },
+                ["categories"] = new[] { "author" },
+            });
+
+        var removeBody = ToolResponse.Text(removeResponse);
+        _output.WriteLine(removeBody);
+        Assert.False(removeResponse.IsError ?? false, $"Selective remove failed: {removeBody}");
+
+        // The cleaned file should no longer surface the known author under a person search.
+        var searchResponse = await _fixture.Client.CallToolAsync(
+            catalog.Search.Name,
+            new Dictionary<string, object?>
+            {
+                ["file"] = new Dictionary<string, object?> { ["filePath"] = "authored_clean.pdf" },
+                ["nameContains"] = "author",
+                ["valueContains"] = SampleDocuments.KnownAuthor,
+            });
+
+        var searchBody = ToolResponse.Text(searchResponse);
+        _output.WriteLine(searchBody);
+        Assert.DoesNotContain(SampleDocuments.KnownAuthor, searchBody, StringComparison.Ordinal);
     }
 }

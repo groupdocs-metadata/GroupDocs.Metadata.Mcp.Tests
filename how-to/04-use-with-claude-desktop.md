@@ -27,7 +27,7 @@ Create the file if it doesn't exist.
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.4", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.7.1", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/Users/you/Documents"
       }
@@ -76,7 +76,7 @@ where dnx.cmd        # Windows (from cmd)
       "args": [
         "run", "--rm", "-i",
         "-v", "/Users/you/Documents:/data",
-        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.4.4"
+        "ghcr.io/groupdocs-metadata/metadata-net-mcp:26.7.1"
       ]
     }
   }
@@ -114,7 +114,8 @@ After editing the config, fully quit and reopen Claude Desktop. On macOS,
 
 1. Open a new conversation.
 2. Click the **🔨 tools** icon in the composer — you should see
-   `read_metadata` and `remove_metadata` listed under `groupdocs-metadata`.
+   `read_metadata`, `search_metadata`, `write_metadata`, `remove_metadata`, and
+   `get_document_info` listed under `groupdocs-metadata`.
 3. If the icon shows an error badge, hover for the details. The most common
    issue is a bad `command` path or invalid `GROUPDOCS_MCP_STORAGE_PATH`.
 
