@@ -11,8 +11,7 @@ namespace GroupDocs.Metadata.Mcp.IntegrationTests;
 /// (IsError is false) rather than surfacing an MCP invocation error. Tests
 /// therefore branch on whether GROUPDOCS_LICENSE_PATH is set on the test host
 /// and propagated to the fixture.
-[Collection(McpServerCollection.Name)]
-public class RemoveMetadataTests
+public class RemoveMetadataTests : IClassFixture<McpServerFixture>
 {
     private readonly McpServerFixture _fixture;
     private readonly ITestOutputHelper _output;

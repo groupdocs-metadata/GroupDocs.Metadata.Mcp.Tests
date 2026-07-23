@@ -5,8 +5,7 @@ using Xunit.Abstractions;
 namespace GroupDocs.Metadata.Mcp.IntegrationTests;
 
 /// SearchMetadata is read-only (no Save), so all of these run in evaluation mode.
-[Collection(McpServerCollection.Name)]
-public class SearchMetadataTests
+public class SearchMetadataTests : IClassFixture<McpServerFixture>
 {
     private readonly McpServerFixture _fixture;
     private readonly ITestOutputHelper _output;

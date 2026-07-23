@@ -5,8 +5,7 @@ using Xunit.Abstractions;
 
 namespace GroupDocs.Metadata.Mcp.IntegrationTests;
 
-[Collection(McpServerCollection.Name)]
-public class ReadMetadataTests
+public class ReadMetadataTests : IClassFixture<McpServerFixture>
 {
     private readonly McpServerFixture _fixture;
     private readonly ITestOutputHelper _output;

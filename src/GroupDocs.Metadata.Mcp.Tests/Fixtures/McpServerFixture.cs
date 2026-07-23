@@ -5,7 +5,15 @@ namespace GroupDocs.Metadata.Mcp.IntegrationTests.Fixtures;
 
 /// Boots the published GroupDocs.Metadata.Mcp NuGet via `dnx` as a child process,
 /// wires an MCP stdio client, and seeds a temporary storage folder with sample
-/// documents. Shared across all tests in the same xUnit collection.
+/// documents.
+///
+/// Used as an `IClassFixture<McpServerFixture>` — ONE fresh server process PER TEST
+/// CLASS (not a single shared server for the whole suite). GroupDocs.Metadata's
+/// evaluation mode caps a process at 15 document opens ("Could not open more than 15
+/// document files in evaluation mode"); a single shared server exhausts that budget
+/// once the suite exceeds 15 opens and every later test then fails at the open step.
+/// A fresh process per class resets the counter — each class stays well under 15.
+/// (Licensed CI runs — GROUPDOCS_LICENSE secret set — have no cap and are unaffected.)
 public sealed class McpServerFixture : IAsyncLifetime
 {
     public string StoragePath { get; } = Path.Combine(
@@ -78,10 +86,4 @@ public sealed class McpServerFixture : IAsyncLifetime
             // Best-effort cleanup on Windows where handles may linger briefly.
         }
     }
-}
-
-[CollectionDefinition(Name)]
-public sealed class McpServerCollection : ICollectionFixture<McpServerFixture>
-{
-    public const string Name = "mcp-server";
 }

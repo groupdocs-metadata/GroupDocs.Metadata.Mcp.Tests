@@ -7,8 +7,7 @@ namespace GroupDocs.Metadata.Mcp.IntegrationTests;
 /// WriteMetadata calls Save(), which is blocked in evaluation mode. Tests branch on
 /// whether GROUPDOCS_LICENSE_PATH is set (same pattern as RemoveMetadataTests). The
 /// unknown-property path returns before Save and is asserted unconditionally.
-[Collection(McpServerCollection.Name)]
-public class WriteMetadataTests
+public class WriteMetadataTests : IClassFixture<McpServerFixture>
 {
     private readonly McpServerFixture _fixture;
     private readonly ITestOutputHelper _output;
